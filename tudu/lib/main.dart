@@ -24,11 +24,12 @@ Future<void> main() async {
   }
 
   final repository = TaskRepository.create();
+  final isOffline = repository is InMemoryTaskRepository;
 
   runApp(
     TuduApp(
       repository: repository,
-      isOffline: !hasSupabase,
+      isOffline: isOffline || !hasSupabase,
     ),
   );
 }

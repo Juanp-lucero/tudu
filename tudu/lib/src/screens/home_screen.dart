@@ -35,6 +35,35 @@ class _HomeScreenState extends State<HomeScreen> {
         final weekTasks = tasks.where((t) => _isThisWeek(t.dueAt)).toList();
         final weekDone = weekTasks.where((t) => t.completed).length;
 
+        final allDone = tasks.where((t) => t.completed).length;
+
+        final (sectionTitle, sectionTrailing, sectionEmptyText, visibleTasks) = switch (_navIndex) {
+          0 => (
+              'Today Tasks',
+              todayTotal == 0 ? '0 of 0' : '$todayDone of $todayTotal',
+              'No tasks for today',
+              todayTasks,
+            ),
+          1 => (
+              'All Tasks',
+              tasks.isEmpty ? '0 of 0' : '$allDone of ${tasks.length}',
+              'No tasks yet',
+              tasks,
+            ),
+          2 => (
+              'This Week',
+              weekTasks.isEmpty ? '0 of 0' : '$weekDone of ${weekTasks.length}',
+              'No tasks for this week',
+              weekTasks,
+            ),
+          _ => (
+              'Tasks',
+              tasks.isEmpty ? '0 of 0' : '$allDone of ${tasks.length}',
+              'No tasks yet',
+              tasks,
+            ),
+        };
+
         return Scaffold(
           floatingActionButton: FloatingActionButton(
             backgroundColor: tuduGreenDark,
@@ -45,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (_) => AddTaskScreen(repository: widget.repository),
                 ),
               );
+              if (!mounted) return;
+              setState(() => _navIndex = 1);
             },
             child: const Icon(Icons.add),
           ),
@@ -127,8 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   _SectionHeader(
-                    title: 'Today Tasks',
-                    trailing: todayTotal == 0 ? '0 of 0' : '$todayDone of $todayTotal',
+                    title: sectionTitle,
+                    trailing: sectionTrailing,
                   ),
                   const SizedBox(height: 10),
                   Expanded(
@@ -137,19 +168,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: todayTasks.isEmpty
-                          ? const Center(
+                      child: visibleTasks.isEmpty
+                          ? Center(
                               child: Text(
-                                'No tasks for today',
-                                style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
+                                sectionEmptyText,
+                                style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
                               ),
                             )
                           : ListView.separated(
                               padding: const EdgeInsets.all(16),
-                              itemCount: todayTasks.length,
+                              itemCount: visibleTasks.length,
                               separatorBuilder: (context, index) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
-                                final task = todayTasks[index];
+                                final task = visibleTasks[index];
                                 return Dismissible(
                                   key: ValueKey(task.id),
                                   direction: DismissDirection.endToStart,

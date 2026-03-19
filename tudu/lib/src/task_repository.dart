@@ -11,17 +11,9 @@ abstract class TaskRepository {
   Future<void> deleteById(String id);
 
   static TaskRepository create() {
-    const url1 = String.fromEnvironment('SUPABASE_URL');
-    const url2 = String.fromEnvironment('SUPERBASE_URL');
-    const key1 = String.fromEnvironment('SUPABASE_ANON_KEY');
-    const key2 = String.fromEnvironment('SUPERBASE_ANON_KEY');
-
-    final url = url1.isNotEmpty ? url1 : (url2.isNotEmpty ? url2 : null);
-    final anonKey = key1.isNotEmpty ? key1 : (key2.isNotEmpty ? key2 : null);
-
-    if (url != null && url.isNotEmpty && anonKey != null && anonKey.isNotEmpty) {
+    try {
       return SupabaseTaskRepository(Supabase.instance.client);
-    }
+    } catch (_) {}
     return InMemoryTaskRepository.seeded();
   }
 }

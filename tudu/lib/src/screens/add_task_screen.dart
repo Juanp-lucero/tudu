@@ -32,6 +32,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = widget.repository is InMemoryTaskRepository;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -41,6 +42,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           'Adding Task',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
+        actions: [
+          if (isOffline)
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: tuduGreenDark.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: tuduGreenDark.withValues(alpha: 0.25)),
+                  ),
+                  child: const Text(
+                    'Offline',
+                    style: TextStyle(color: tuduGreenDark, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Form(
@@ -164,6 +185,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       await widget.repository.add(draft);
       if (!mounted) return;
       Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo guardar en Supabase: $e')),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
